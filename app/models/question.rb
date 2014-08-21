@@ -23,12 +23,22 @@ class Question < ActiveRecord::Base
   )
   
   def results
-    #TODO: REWORK USING JOIN
-    ht = Hash.new(0)
-    answer_choices.each do |answer_choice|
-      ht[answer_choice.answer] = answer_choice.responses.length
-    end
-    
-    ht
+    #old bad way
+    # ht = Hash.new(0)
+    # answer_choices.each do |answer_choice|
+    #   ht[answer_choice.answer] = answer_choice.responses.length
+    # end
+    #
+    # ht
+    #
+    #now using joins
+    a = AnswerChoice.joins(:responses).where("question_id = ?", self.id).group(:answer).count(:answer)
+    b = AnswerChoice.joins('LEFT OUTER JOIN responses ON answer_choices.id = responses.answer_choice_id' )
+      .where("question_id = ?", self.id)
+      .group(:answer)
+      .count(:answer)
+
+    b.each_pair { |k, v| b[k] = 0 }
+    b.merge(a)
   end
 end
