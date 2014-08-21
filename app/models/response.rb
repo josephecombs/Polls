@@ -26,32 +26,25 @@ class Response < ActiveRecord::Base
   ) 
   
   def sibling_responses
-    # self.question.responses.where(self.user_id != user_id)
-    if !self.id.nil?
-      # self.question.responses#.where('user_id != ?', self.user_id)
-      self.question.responses.where('responses.id != ?', self.id)
+    if self.id.nil?
+      self.question.responses#.where('user_id != ?', self.user_id)
     else
-      puts "record has not been written to db yet"
-      # TODO: Use this.
-      #self.question.responses.where('responses.id != ?', self.id)
+      self.question.responses.where('responses.id != ?', self.id)
     end
   end
   
   private
   
   def is_not_the_author?
-    # TODO: Rework to use joins
-    if self.user_id == self.question.poll.author_id
+    if Question.joins(:poll).where("author_id = ?", self.user_id).pluck(:id).include?(self.question.id)
       errors.add(:author, "response cant be submitted by poll author")
     end
   end
   
   def respondent_has_already_answered_question
-    # TODO: Add .where responses.user_id is our user_id, then check exists?
-    array_of_user_id = self.sibling_responses.to_a.map { |resp| resp.user_id }
-    array_of_user_id.include? self.user_id
-    # TODO: Add errors here.
-    #.includes(:user_id).where('user_id = ?', self.user_id)
+    if Response.joins(:question).where("question_id = ?", self.question.id).exists?(user_id: self.user_id)
+      errors.add(:user_id, "User has already responded")
+    end
   end
   
   
