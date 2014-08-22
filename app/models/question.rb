@@ -32,13 +32,17 @@ class Question < ActiveRecord::Base
     # ht
     #
     #now using joins
-    a = AnswerChoice.joins(:responses).where("question_id = ?", self.id).group(:answer).count(:answer)
-    b = AnswerChoice.joins('LEFT OUTER JOIN responses ON answer_choices.id = responses.answer_choice_id' )
+    # a = AnswerChoice.joins(:responses).where("question_id = ?", self.id).group(:answer).count(:answer)
+    result = {}
+    b = AnswerChoice.select("answer_choices.*, count(responses.id) as response_count")
+      .joins('LEFT OUTER JOIN responses ON answer_choices.id = responses.answer_choice_id' )
       .where("question_id = ?", self.id)
       .group(:answer)
-      .count(:answer)
-
+      # .count(:answer)
+    b.each do |ac|
+      result[ac.title] = ac.response_count
+    end
     b.each_pair { |k, v| b[k] = 0 }
-    b.merge(a)
+    # b.merge(a)
   end
 end
