@@ -2,9 +2,12 @@ class Response < ActiveRecord::Base
   validates :answer_choice_id, presence: true
   validates :user_id, presence: true
   validate :is_not_the_author?
-  validate :respondent_has_already_answered_question
+
   
-  
+  # before_update do
+  #   puts "***********======before update***********======"
+  #   self.id += 10
+  # end
   belongs_to(
     :answer_choice,
     class_name: "AnswerChoice",
